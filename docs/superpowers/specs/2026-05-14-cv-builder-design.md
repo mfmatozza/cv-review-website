@@ -149,7 +149,7 @@ Cream section.
 |---|---|---|
 | Price | $0 / forever | $X / month (TBD) |
 | Templates | 1 | All |
-| CVs | 1 | Unlimited |
+| CVs | 1 active | Unlimited |
 | LinkedIn import | Yes | Yes |
 | Photo upload | Yes | Yes |
 | Custom sections | No | Yes |
