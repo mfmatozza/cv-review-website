@@ -1,111 +1,70 @@
 'use client'
 import { useRef } from 'react'
 import { useGSAP } from '@gsap/react'
-import { gsap, ScrollTrigger } from '@/lib/gsap'
+import { gsap } from '@/lib/gsap'
 
-const STATES = [
+const PROBLEMS = [
   {
-    headline: 'CV builders are broken.',
-    sub: 'Word templates. Drag-and-drop. Re-typing everything.',
+    marker: '✗',
+    headline: 'Word templates look amateur.',
+    body: 'Inconsistent spacing. Fonts that break on every device. Recruiters can spot a Word CV from three pixels away.',
   },
   {
-    headline: 'Your time is wasted\non formatting.',
-    sub: 'You should be applying, not tweaking margins.',
+    marker: '✗',
+    headline: 'You re-type everything twice.',
+    body: 'Your LinkedIn has it all. Your resume tool doesn\'t care. So you copy-paste, fix formatting, repeat for every job.',
   },
   {
-    headline: "Your CV looks like\neveryone else's.",
-    sub: 'Because you used the same tool as everyone else.',
-  },
-  {
-    headline: 'We fixed all of it.',
-    sub: 'LaTeX precision. LinkedIn import. One click download.',
+    marker: '✗',
+    headline: 'Your CV looks like everyone else\'s.',
+    body: 'Same Canva template. Same section order. Same hiring manager, same pile. You\'re not standing out.',
   },
 ]
 
 export default function ProblemSolution() {
-  const sectionRef  = useRef<HTMLDivElement>(null)
-  const headlineRef = useRef<HTMLHeadingElement>(null)
-  const subRef      = useRef<HTMLParagraphElement>(null)
-  const dotsRef     = useRef<(HTMLDivElement | null)[]>([])
-
-  const setDot = (active: number) => {
-    dotsRef.current.forEach((dot, i) => {
-      if (!dot) return
-      dot.style.background = i === active ? '#2d6a2d' : 'rgba(45,106,45,0.2)'
-    })
-  }
+  const sectionRef = useRef<HTMLDivElement>(null)
 
   useGSAP(() => {
-    ScrollTrigger.create({
-      trigger: sectionRef.current,
-      start: 'top 60%',
-      once: true,
-      onEnter: () => advanceTo(1),
-    })
-
-    function advanceTo(idx: number) {
-      if (idx >= STATES.length) return
-      const state = STATES[idx]
-
-      gsap.to([headlineRef.current, subRef.current], {
-        opacity: 0,
-        y: -16,
-        duration: 0.35,
-        ease: 'power2.in',
-        onComplete: () => {
-          if (headlineRef.current) headlineRef.current.textContent = state.headline
-          if (subRef.current) subRef.current.textContent = state.sub
-          setDot(idx)
-          gsap.fromTo(
-            [headlineRef.current, subRef.current],
-            { opacity: 0, y: 20 },
-            { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' }
-          )
-          if (idx < STATES.length - 1) {
-            setTimeout(() => advanceTo(idx + 1), 2200)
-          }
-        },
-      })
-    }
+    const items = sectionRef.current?.querySelectorAll('.problem-item')
+    if (!items) return
+    gsap.fromTo(items,
+      { y: 24, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.5, stagger: 0.12, ease: 'power3.out',
+        scrollTrigger: { trigger: sectionRef.current, start: 'top 75%' } }
+    )
   }, { scope: sectionRef })
 
   return (
-    <section
-      ref={sectionRef}
-      id="problem"
-      className="flex items-center justify-center min-h-screen relative overflow-hidden bg-cv-dark"
-    >
-      <div className="absolute inset-0 pointer-events-none grid-overlay-dark" />
+    <section ref={sectionRef} id="problem" className="py-20 bg-cv-cream">
+      <div className="max-w-5xl mx-auto px-8">
 
-      <div className="relative text-center max-w-2xl mx-auto px-6">
-        <div
-          className="font-mono uppercase tracking-widest text-cv-green-light mb-8"
-          style={{ fontSize: '10px', letterSpacing: '3px' }}
-        >
-          &gt; the_problem → the_fix
+        <div className="font-mono uppercase tracking-widest text-cv-green mb-4" style={{ fontSize: '10px', letterSpacing: '3px' }}>
+          &gt; why_this_exists
         </div>
-
-        <h2
-          ref={headlineRef}
-          className="text-4xl md:text-5xl font-black leading-tight mb-6 font-serif text-cv-text-light whitespace-pre-line"
-        >
-          {STATES[0].headline}
+        <h2 className="text-4xl md:text-5xl font-black font-serif text-cv-forest mb-14" style={{ lineHeight: 1.05 }}>
+          The tools that exist<br />are not good enough.
         </h2>
 
-        <p ref={subRef} className="font-mono text-sm mb-10 text-cv-muted">
-          {STATES[0].sub}
-        </p>
-
-        <div className="flex gap-2 justify-center">
-          {STATES.map((_, i) => (
-            <div
-              key={i}
-              ref={(el) => { dotsRef.current[i] = el }}
-              className="w-1.5 h-1.5 rounded-full transition-colors duration-300"
-              style={{ background: i === 0 ? '#2d6a2d' : 'rgba(45,106,45,0.2)' }}
-            />
+        <div className="grid md:grid-cols-3 gap-8">
+          {PROBLEMS.map((p) => (
+            <div key={p.headline} className="problem-item opacity-0">
+              <div className="font-mono mb-3" style={{ fontSize: '18px', color: '#c0392b' }}>{p.marker}</div>
+              <h3 className="font-black font-serif text-cv-forest mb-2" style={{ fontSize: '17px', lineHeight: 1.2 }}>
+                {p.headline}
+              </h3>
+              <p className="text-sm leading-relaxed" style={{ color: '#5a7a5a' }}>{p.body}</p>
+            </div>
           ))}
         </div>
+
+        <div
+          className="mt-14 pt-10 font-serif font-black text-cv-forest"
+          style={{ borderTop: '1px solid rgba(45,106,45,0.15)', fontSize: 'clamp(1.4rem, 3vw, 2rem)', lineHeight: 1.2 }}
+        >
+          So we built the CV tool that actually works —<br />
+          <span className="text-cv-green">LaTeX precision, without touching LaTeX.</span>
+        </div>
+
       </div>
     </section>
   )

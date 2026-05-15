@@ -2,129 +2,106 @@
 import { useRef } from 'react'
 import { useGSAP } from '@gsap/react'
 import Link from 'next/link'
-import { gsap, ScrollTrigger, TextPlugin } from '@/lib/gsap'
-import CVCard from './CVCard'
+import { gsap, ScrollTrigger } from '@/lib/gsap'
+import AppPreview from './AppPreview'
 
-const PHRASES = [
-  'Importing LinkedIn profile...',
-  'Compiling your PDF...',
-  'Ready to download.',
-]
+const WORDS = ['beautifully', 'precisely', 'perfectly', 'effortlessly', 'professionally']
 
 export default function Hero() {
   const sectionRef = useRef<HTMLDivElement>(null)
   const gridRef    = useRef<HTMLDivElement>(null)
-  const tagRef     = useRef<HTMLDivElement>(null)
-  const wordsRef   = useRef<HTMLSpanElement[]>([])
-  const typeRef    = useRef<HTMLSpanElement>(null)
+  const h1Ref      = useRef<HTMLHeadingElement>(null)
+  const rotWordRef = useRef<HTMLSpanElement>(null)
   const ctasRef    = useRef<HTMLDivElement>(null)
-  const cardRef    = useRef<HTMLDivElement>(null)
+  const previewRef = useRef<HTMLDivElement>(null)
 
   useGSAP(() => {
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
 
-    tl.fromTo(gridRef.current,  { opacity: 0 },        { opacity: 1, duration: 0.6 })
-    tl.fromTo(tagRef.current,   { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4 }, '-=0.2')
-    tl.fromTo(wordsRef.current, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.1 }, '-=0.1')
-    tl.fromTo(ctasRef.current,  { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4 }, '-=0.2')
-    tl.fromTo(cardRef.current,  { opacity: 0, x: 60 }, { opacity: 1, x: 0, duration: 0.5, ease: 'back.out(1.4)' }, '-=0.3')
+    tl.fromTo(gridRef.current,   { opacity: 0 },        { opacity: 1, duration: 0.6 })
+    tl.fromTo(h1Ref.current,     { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6 }, '-=0.2')
+    tl.fromTo(ctasRef.current,   { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4 }, '-=0.2')
+    tl.fromTo(previewRef.current,{ opacity: 0, x: 60 }, { opacity: 1, x: 0, duration: 0.5, ease: 'back.out(1.4)' }, '-=0.3')
 
-    // Typewriter loop
-    let i = 0
-    const typeNext = () => {
-      const phrase = PHRASES[i % PHRASES.length]
-      gsap.to(typeRef.current, {
-        duration: phrase.length * 0.05,
-        text: { value: phrase, delimiter: '' },
-        ease: 'none',
+    // Rotating word — fade up out, swap text, fade down in
+    let idx = 0
+    const rotateWord = () => {
+      gsap.to(rotWordRef.current, {
+        y: -14, opacity: 0, duration: 0.22, ease: 'power2.in',
         onComplete: () => {
-          setTimeout(() => {
-            gsap.to(typeRef.current, {
-              duration: 0.3,
-              opacity: 0,
-              onComplete: () => {
-                if (typeRef.current) {
-                  typeRef.current.textContent = ''
-                  gsap.set(typeRef.current, { opacity: 1 })
-                }
-                i++
-                typeNext()
-              },
-            })
-          }, 2200)
+          idx = (idx + 1) % WORDS.length
+          if (rotWordRef.current) rotWordRef.current.textContent = WORDS[idx]
+          gsap.fromTo(rotWordRef.current,
+            { y: 14, opacity: 0 },
+            { y: 0, opacity: 1, duration: 0.28, ease: 'power2.out',
+              onComplete: () => setTimeout(rotateWord, 2200) }
+          )
         },
       })
     }
-    tl.call(typeNext)
+    tl.call(() => setTimeout(rotateWord, 2400))
 
-    // Card float
-    gsap.to(cardRef.current, { y: -10, duration: 4, ease: 'sine.inOut', yoyo: true, repeat: -1 })
+    // Subtle float on preview
+    gsap.to(previewRef.current, { y: -8, duration: 4, ease: 'sine.inOut', yoyo: true, repeat: -1 })
 
-    // Card parallax on scroll
+    // Parallax tilt on scroll
     ScrollTrigger.create({
       trigger: sectionRef.current,
       start: 'top top',
       end: 'bottom top',
       onUpdate: (self) => {
-        gsap.set(cardRef.current, {
-          rotateX: self.progress * 8,
-          rotateY: -self.progress * 5,
+        gsap.set(previewRef.current, {
+          rotateX: self.progress * 6,
+          rotateY: -self.progress * 4,
         })
       },
     })
   }, { scope: sectionRef })
 
-  const words = ['Your', 'career,', 'beautifully', 'typeset.']
-
   return (
     <section
       ref={sectionRef}
       id="hero"
-      className="relative min-h-screen flex items-center bg-cv-cream"
+      className="relative flex items-center bg-cv-cream"
       style={{ paddingTop: '56px' }}
     >
       <div ref={gridRef} className="absolute inset-0 pointer-events-none grid-overlay opacity-0" />
 
-      <div className="relative max-w-6xl mx-auto px-6 py-20 w-full grid md:grid-cols-2 gap-16 items-center">
+      <div className="relative max-w-7xl mx-auto px-8 py-12 w-full grid md:grid-cols-2 gap-12 items-center">
 
+        {/* Left — text */}
         <div>
-          <div
-            ref={tagRef}
-            className="font-mono text-cv-green uppercase tracking-widest mb-4 opacity-0"
-            style={{ fontSize: '10px', letterSpacing: '3px' }}
+          <h1
+            ref={h1Ref}
+            className="font-black leading-[1.05] mb-10 font-serif text-cv-forest opacity-0"
+            style={{ fontSize: 'clamp(2.8rem, 5vw, 4.5rem)' }}
           >
-            &gt; latex_cv_builder
-          </div>
-
-          <h1 className="text-4xl md:text-5xl font-black leading-tight mb-4 font-serif text-cv-forest">
-            {words.map((word, idx) => (
-              <span
-                key={word}
-                ref={(el) => { if (el) wordsRef.current[idx] = el }}
-                className="inline-block mr-3 opacity-0"
-              >
-                {word === 'beautifully'
-                  ? <em className="not-italic text-cv-green">{word}</em>
-                  : word}
-              </span>
-            ))}
+            Your career{' '}
+            <span
+              ref={rotWordRef}
+              className="text-cv-green inline-block"
+              style={{
+                textDecoration: 'underline',
+                textDecorationThickness: '3px',
+                textUnderlineOffset: '8px',
+              }}
+            >
+              {WORDS[0]}
+            </span>
+            <br />
+            typeset.
           </h1>
 
-          <div className="font-mono text-sm mb-8 flex items-center text-cv-subtle">
-            <span ref={typeRef} />
-            <span className="inline-block w-0.5 h-4 ml-0.5 bg-cv-green animate-blink" />
-          </div>
-
-          <div ref={ctasRef} className="flex gap-3 flex-wrap opacity-0">
+          <div ref={ctasRef} className="flex gap-4 flex-wrap opacity-0">
             <Link
               href="/onboarding"
-              className="font-mono font-bold text-sm px-5 py-3 rounded-md bg-cv-green text-cv-cream hover:bg-cv-green-mid transition-colors"
+              className="font-mono font-bold text-sm px-7 py-3.5 rounded-md bg-cv-green text-cv-cream hover:bg-cv-green-mid transition-colors"
             >
               Build my CV →
             </Link>
             <a
               href="#templates"
-              className="font-mono text-sm px-5 py-3 rounded-md border text-cv-green hover:bg-cv-green/5 transition-colors"
+              className="font-mono text-sm px-7 py-3.5 rounded-md border text-cv-green hover:bg-cv-green/5 transition-colors"
               style={{ borderColor: 'rgba(45,106,45,0.3)' }}
             >
               See templates
@@ -132,12 +109,13 @@ export default function Hero() {
           </div>
         </div>
 
+        {/* Right — app preview */}
         <div
-          ref={cardRef}
+          ref={previewRef}
           className="hidden md:block opacity-0"
-          style={{ perspective: '800px' }}
+          style={{ perspective: '900px' }}
         >
-          <CVCard />
+          <AppPreview />
         </div>
       </div>
     </section>
